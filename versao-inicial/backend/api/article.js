@@ -1,5 +1,5 @@
 module.exports = app => {
-    const {existsOrError, notExistisOrError } = app.api.validation 
+    const {existsOrError } = app.api.validation 
 
     const save = ( req, res ) => {
         const article = { ...req.body }
@@ -9,7 +9,7 @@ module.exports = app => {
             existsOrError( article.name, 'Nome não informado')
             existsOrError( article.description,'Descrição não informada')
             existsOrError( article.categoryId,'Categoria não informada')
-            existsOrError( article.userId,'Autor não informado')
+            existsOrError( article.userId,'Id do Usuário não informado')
             existsOrError( article.content,'Conteúdo não informado')
 
         } catch( msg ) {
@@ -25,19 +25,24 @@ module.exports = app => {
 
         }else {
             app.db('articles')
-            .insert(article)
-            .then(_=>res.status(204).send())
-            .catch( err => res.status(500).send(err))
+                .insert(article)
+                .then(_ =>res.status(204).send())
+                .catch( err => res.status(500).send(err))
         }
     }
 
-    const remove = async( req,res ) => {
+    const remove = async ( req,res ) => {
         try {
             const rowsDeleted = await app.db('articles')
-                .where({id: req.parms.id}).del()
-            notExistisOrError( rowsDeleted,'Artigo não foi encontrado')
+                .where({ id: req.params.id}).del()
 
+            try {
+                existsOrError( rowsDeleted,'Artigo não foi encontrado')
+            } catch (msg) {
+                return res.status(400).send(msg)    
+            }    
             res.status(204).send()
+            
         } catch(msg) {
             res.status(500).send(msg)
         }
@@ -47,8 +52,9 @@ module.exports = app => {
 
     const get = async ( req,res) => {
         const page = req.query.page || 1
-        const result = await app.db('articles').count('id').fisrt()
+        const result = await app.db('articles').count('id').first()
         const count = parseInt( result.count )
+        
 
         app.db('articles')
             .select('id','name','description')
@@ -58,12 +64,12 @@ module.exports = app => {
     }
     
     const getById = ( req, res )=> {
-        app.db('article')
+        app.db('articles')
             .where({id: req.params.id })
             .first()
-            .then( article => { 
-                article.content = article.content.toString()
-                return res.json(article)
+            .then( articles => { 
+                articles.content = articles.content.toString()
+                return res.json(articles)
             })
             .catch( err => res.status(500).send(err))
     }

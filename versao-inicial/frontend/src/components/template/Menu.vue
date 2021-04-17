@@ -1,10 +1,17 @@
 <template>
-    <aside class="menu" ></aside>
+    <!-- Por ter mapeado em mapState ismenuvisible fica disponivel para uso aqui. -->
+    <aside class="menu" v-show="isMenuVisible" ></aside>
 </template>
 
 <script>
+
+// responsavel por mapear um atributo da store dentro do meu componente.
+import { mapState } from 'vuex'
+
+
 export default {
-    name: 'Menu'
+    name: 'Menu',
+    computed: mapState(['isMenuVisible'])
 }
 </script>
 
